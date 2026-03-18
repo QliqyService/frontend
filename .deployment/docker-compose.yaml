@@ -40,12 +40,15 @@ services:
       <<: [*frontend-envs]
     labels:
       - traefik.enable=true
+      - traefik.docker.network=traefik-network
       - traefik.http.services.frontend.loadbalancer.server.port=80
       - traefik.http.services.frontend.loadbalancer.passhostheader=true
       - traefik.http.routers.frontend.rule=Host(`${FRONTEND_DOMAIN}`)
       - traefik.http.routers.frontend.entrypoints=https
       - traefik.http.routers.frontend.tls=true
       - traefik.http.routers.frontend.tls.certresolver=le-${APP_STAND:-dev}
+      - traefik.http.routers.frontend.service=frontend
+      - traefik.http.routers.frontend.priority=1
     networks: [ qliqy-network, traefik-network ]
     healthcheck:
       test: [ "CMD", "wget", "-qO-", "http://localhost/healthz" ]
