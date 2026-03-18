@@ -1,0 +1,57 @@
+name: qliqy
+
+# APP_STAND
+#
+# FRONTEND_DOMAIN
+# VITE_API_BASE_URL
+
+networks:
+  qliqy-network:
+    name: qliqy-network
+    external: true
+  traefik-network:
+    name: traefik-network
+    external: true
+
+x-logging: &formatted-logging
+  driver: json-file
+  options:
+    tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    max-size: "10m"
+    max-file: "3"
+    mode: "non-blocking"
+    max-buffer-size: "4m"
+
+x-frontend-envs: &frontend-envs
+  APP_STAND: ${APP_STAND:-dev}
+
+services:
+  frontend:
+    container_name: frontend
+    image: qliqy-frontend
+    restart: always
+    logging: *formatted-logging
+    build:
+      context: ..
+      dockerfile: .deployment/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
+    environment:
+      <<: [*frontend-envs]
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.frontend.loadbalancer.server.port=80
+      - traefik.http.services.frontend.loadbalancer.passhostheader=true
+      - traefik.http.routers.frontend.rule=Host(`${FRONTEND_DOMAIN}`)
+      - traefik.http.routers.frontend.entrypoints=https
+      - traefik.http.routers.frontend.tls=true
+      - traefik.http.routers.frontend.tls.certresolver=le-${APP_STAND:-dev}
+    networks: [ qliqy-network, traefik-network ]
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost/healthz" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    ports:
+      - "8002:80"
