@@ -1,9 +1,18 @@
-export function formatDate(value: number | null | undefined): string {
+export function formatDate(value: number | string | null | undefined): string {
   if (!value) {
     return "-";
   }
 
-  return new Date(value * 1000).toLocaleString();
+  const date =
+    typeof value === "number"
+      ? new Date(value < 1_000_000_000_000 ? value * 1000 : value)
+      : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleString();
 }
 
 export function userDisplayName(firstName?: string | null, lastName?: string | null, email?: string): string {
