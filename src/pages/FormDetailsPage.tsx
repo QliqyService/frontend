@@ -97,6 +97,8 @@ export function FormDetailsPage() {
     return <section className="page-shell">Form not found.</section>;
   }
 
+  const qrCodeSrc = api.publicQrCodeDataUrl(form.qrcode) ?? api.publicQrCodeUrl(form.id);
+
   return (
     <section className="page-shell stack-lg">
       <header className="page-header">
@@ -148,8 +150,8 @@ export function FormDetailsPage() {
 
         <section className="panel stack">
           <div className="eyebrow">QR code</div>
-          <img className="qr-image" src={api.publicQrCodeUrl(form.id)} alt={`QR code for ${form.title}`} />
-          <a href={api.publicQrCodeUrl(form.id)} target="_blank" rel="noreferrer" className="text-link">
+          <img className="qr-image" src={qrCodeSrc} alt={`QR code for ${form.title}`} />
+          <a href={qrCodeSrc} target="_blank" rel="noreferrer" className="text-link">
             Open QR image
           </a>
         </section>

@@ -143,4 +143,12 @@ export const api = {
   publicQrCodeUrl(formId: string): string {
     return `${API_BASE_URL}/public/${formId}/qrcode`;
   },
+
+  publicQrCodeDataUrl(qrcode?: string | null): string | null {
+    if (!qrcode) {
+      return null;
+    }
+
+    return `data:image/png;base64,${qrcode}`;
+  },
 };

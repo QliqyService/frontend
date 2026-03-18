@@ -90,13 +90,15 @@ export function PublicFormPage() {
     return <section className="public-shell">Form not found.</section>;
   }
 
+  const qrCodeSrc = api.publicQrCodeDataUrl(form.qrcode) ?? api.publicQrCodeUrl(form.id);
+
   return (
     <div className="public-shell">
       <section className="public-card hero-card">
         <div className="eyebrow">Public contact page</div>
         <h1>{form.title}</h1>
         <p>{form.description || "Leave a message for the owner of this page."}</p>
-        <img className="public-qr" src={api.publicQrCodeUrl(form.id)} alt={`QR code for ${form.title}`} />
+        <img className="public-qr" src={qrCodeSrc} alt={`QR code for ${form.title}`} />
       </section>
 
       <section className="public-card">
