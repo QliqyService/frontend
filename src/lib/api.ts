@@ -11,7 +11,7 @@ import type {
 
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
-const PUBLIC_BASE_URL = "/public";
+const PUBLIC_API_BASE_URL = `${API_BASE_URL}/public`;
 
 export class ApiError extends Error {
   status: number;
@@ -131,7 +131,7 @@ export const api = {
   },
 
   async getPublicForm(formId: string): Promise<UserForm> {
-    const response = await fetch(`${PUBLIC_BASE_URL}/${formId}`);
+    const response = await fetch(`${PUBLIC_API_BASE_URL}/${formId}`);
     return parseResponse<UserForm>(response);
   },
 
@@ -143,7 +143,7 @@ export const api = {
   },
 
   publicQrCodeUrl(formId: string): string {
-    return `${PUBLIC_BASE_URL}/${formId}/qrcode`;
+    return `${PUBLIC_API_BASE_URL}/${formId}/qrcode`;
   },
 
   publicQrCodeDataUrl(qrcode?: string | null): string | null {
