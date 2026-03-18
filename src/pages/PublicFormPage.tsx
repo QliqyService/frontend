@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { api } from "../lib/api";
@@ -20,6 +20,9 @@ export function PublicFormPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
+
+  const publicUrl = useMemo(() => `${window.location.origin}/public/forms/${formId}`, [formId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +81,12 @@ export function PublicFormPage() {
     }
   }
 
+  async function handleCopyLink() {
+    await navigator.clipboard.writeText(publicUrl);
+    setIsCopied(true);
+    window.setTimeout(() => setIsCopied(false), 1600);
+  }
+
   if (isLoading) {
     return <section className="public-shell">Loading public form...</section>;
   }
@@ -93,59 +102,110 @@ export function PublicFormPage() {
   const qrCodeSrc = api.publicQrCodeDataUrl(form.qrcode) ?? api.publicQrCodeUrl(form.id);
 
   return (
-    <div className="public-shell">
-      <section className="public-card hero-card">
-        <div className="eyebrow">Public contact page</div>
-        <h1>{form.title}</h1>
-        <p>{form.description || "Leave a message for the owner of this page."}</p>
-        <img className="public-qr" src={qrCodeSrc} alt={`QR code for ${form.title}`} />
-      </section>
+    <div className="public-page">
+      <div className="public-page-glow public-page-glow-left" />
+      <div className="public-page-glow public-page-glow-right" />
 
-      <section className="public-card">
-        <div className="eyebrow">Send a message</div>
-        <h2>Comment form</h2>
-
-        <form className="stack" onSubmit={handleSubmit}>
-          <div className="split-fields">
-            <label className="field">
-              <span>First name</span>
-              <input value={firstName} onChange={(event) => setFirstName(event.target.value)} maxLength={32} />
-            </label>
-            <label className="field">
-              <span>Last name</span>
-              <input value={lastName} onChange={(event) => setLastName(event.target.value)} maxLength={64} />
-            </label>
+      <div className="public-shell public-shell-enhanced">
+        <section className="public-hero">
+          <div className="public-brand">
+            <span className="public-brand-mark">Q</span>
+            <div>
+              <strong>Qliqy</strong>
+              <p>Private contact page</p>
+            </div>
           </div>
 
-          <label className="field">
-            <span>Phone</span>
-            <input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Optional" />
-          </label>
+          <div className="public-badge">Open for replies</div>
+          <h1>{form.title}</h1>
+          <p className="public-hero-text">{form.description || "Leave a message for the owner of this page."}</p>
 
-          <label className="field">
-            <span>Title</span>
-            <input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={128} required />
-          </label>
+          <div className="public-stat-grid">
+            <article className="public-stat-card">
+              <span>Response format</span>
+              <strong>Private message</strong>
+              <p>Your comment goes directly to the form owner.</p>
+            </article>
+            <article className="public-stat-card">
+              <span>Share</span>
+              <strong>QR ready</strong>
+              <p>Open on mobile or scan the code from another device.</p>
+            </article>
+          </div>
 
-          <label className="field">
-            <span>Message</span>
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              maxLength={1024}
-              rows={6}
-              required
-            />
-          </label>
+          <div className="public-qr-card">
+            <div>
+              <div className="eyebrow">Quick access</div>
+              <h2>Scan or copy the page link</h2>
+            </div>
 
-          {error ? <p className="error-text">{error}</p> : null}
-          {isSent ? <p className="success-text">Message sent.</p> : null}
+            <img className="public-qr public-qr-large" src={qrCodeSrc} alt={`QR code for ${form.title}`} />
 
-          <button type="submit" className="primary-button" disabled={isSubmitting}>
-            {isSubmitting ? "Sending..." : "Send message"}
-          </button>
-        </form>
-      </section>
+            <div className="public-link-box">
+              <code>{publicUrl}</code>
+              <button type="button" className="secondary-button" onClick={() => void handleCopyLink()}>
+                {isCopied ? "Copied" : "Copy link"}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="public-form-card">
+          <div className="eyebrow">Send a message</div>
+          <h2>Write to the owner</h2>
+          <p className="public-form-intro">
+            Leave your contact details and a short note. The message will be attached to this form.
+          </p>
+
+          <form className="stack" onSubmit={handleSubmit}>
+            <div className="split-fields">
+              <label className="field">
+                <span>First name</span>
+                <input value={firstName} onChange={(event) => setFirstName(event.target.value)} maxLength={32} />
+              </label>
+              <label className="field">
+                <span>Last name</span>
+                <input value={lastName} onChange={(event) => setLastName(event.target.value)} maxLength={64} />
+              </label>
+            </div>
+
+            <label className="field">
+              <span>Phone</span>
+              <input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+1 555 123 4567" />
+            </label>
+
+            <label className="field">
+              <span>Title</span>
+              <input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                maxLength={128}
+                placeholder="Short subject"
+                required
+              />
+            </label>
+
+            <label className="field">
+              <span>Message</span>
+              <textarea
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                maxLength={1024}
+                rows={7}
+                placeholder="Tell the owner why you are reaching out."
+                required
+              />
+            </label>
+
+            {error ? <p className="error-text public-feedback">{error}</p> : null}
+            {isSent ? <p className="success-text public-feedback">Message sent. You can leave another one if needed.</p> : null}
+
+            <button type="submit" className="primary-button public-submit" disabled={isSubmitting}>
+              {isSubmitting ? "Sending..." : "Send message"}
+            </button>
+          </form>
+        </section>
+      </div>
     </div>
   );
 }
