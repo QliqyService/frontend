@@ -4,6 +4,7 @@ import type {
   CreateCommentPayload,
   CreateFormPayload,
   LoginResponse,
+  UpdateUserPayload,
   UpdateFormPayload,
   User,
   UserForm,
@@ -86,6 +87,17 @@ export const api = {
 
   async getMe(token: string): Promise<User> {
     return request<User>("/user/me", undefined, token);
+  },
+
+  async updateMe(token: string, payload: UpdateUserPayload): Promise<User> {
+    return request<User>(
+      "/user/me",
+      {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      },
+      token,
+    );
   },
 
   async getForms(token: string): Promise<UserForm[]> {

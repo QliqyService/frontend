@@ -197,6 +197,10 @@ button {
   grid-template-columns: 2fr 1fr;
 }
 
+.profile-grid {
+  align-items: start;
+}
+
 .form-card {
   display: grid;
   gap: 1rem;
@@ -364,6 +368,40 @@ button {
 
 .comment-card h3 {
   margin: 0;
+}
+
+.profile-notify-card,
+.profile-channel-card {
+  padding: 1rem 1.1rem;
+  border-radius: 1.1rem;
+  background: #fff7eb;
+  border: 1px solid rgba(177, 141, 75, 0.24);
+}
+
+.profile-notify-card h3,
+.profile-channel-card strong {
+  display: block;
+  margin: 0;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-weight: 600;
+}
+
+.toggle-row input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.profile-code {
+  margin: 0.35rem 0 0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1rem;
+  color: var(--accent-deep);
+  word-break: break-all;
 }
 
 .empty-state {

@@ -66,3 +66,13 @@ export interface CreateCommentPayload {
   description: string;
   phone?: number;
 }
+
+export interface UpdateUserPayload {
+  email?: string;
+  phone?: number | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  tg_account?: string | null;
+  notify_email_enabled?: boolean;
+  notify_email?: string | null;
+}

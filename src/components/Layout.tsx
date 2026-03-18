@@ -27,6 +27,7 @@ export function Layout() {
         <nav className="nav">
           <NavLink to="/forms">My forms</NavLink>
           <NavLink to="/forms/new">Create form</NavLink>
+          <NavLink to="/profile">Profile</NavLink>
         </nav>
 
         <div className="sidebar-card">

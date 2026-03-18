@@ -9,6 +9,7 @@ import { FormEditPage } from "./pages/FormEditPage";
 import { FormsListPage } from "./pages/FormsListPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { PublicFormPage } from "./pages/PublicFormPage";
 
 
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="forms/new" element={<FormCreatePage />} />
             <Route path="forms/:formId" element={<FormDetailsPage />} />
             <Route path="forms/:formId/edit" element={<FormEditPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
 
           <Route path="*" element={<NotFoundPage />} />
