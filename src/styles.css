@@ -404,6 +404,14 @@ button {
   word-break: break-all;
 }
 
+.profile-steps {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.9rem 0 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 .empty-state {
   text-align: left;
 }

@@ -4,6 +4,8 @@ import { useAuth } from "../lib/auth";
 import { api } from "../lib/api";
 import { formatDate, normalizePhone } from "../lib/format";
 
+const TELEGRAM_BOT_URL = import.meta.env.VITE_TELEGRAM_BOT_URL;
+
 
 export function ProfilePage() {
   const { token, user, refreshUser } = useAuth();
@@ -12,7 +14,6 @@ export function ProfilePage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
-  const [telegramAccount, setTelegramAccount] = useState("");
   const [notifyEmailEnabled, setNotifyEmailEnabled] = useState(false);
   const [notifyEmail, setNotifyEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +25,6 @@ export function ProfilePage() {
     setFirstName(user?.first_name ?? "");
     setLastName(user?.last_name ?? "");
     setPhone(user?.phone ? String(user.phone) : "");
-    setTelegramAccount(user?.tg_account ?? "");
     setNotifyEmailEnabled(user?.notify_email_enabled ?? false);
     setNotifyEmail(user?.notify_email ?? "");
   }, [user]);
@@ -45,7 +45,6 @@ export function ProfilePage() {
         first_name: firstName || null,
         last_name: lastName || null,
         phone: normalizePhone(phone) ?? null,
-        tg_account: telegramAccount || null,
         notify_email_enabled: notifyEmailEnabled,
         notify_email: notifyEmail || null,
       });
@@ -107,15 +106,6 @@ export function ProfilePage() {
               />
             </label>
 
-            <label className="field">
-              <span>Telegram account</span>
-              <input
-                value={telegramAccount}
-                onChange={(event) => setTelegramAccount(event.target.value)}
-                placeholder="@your_handle"
-              />
-            </label>
-
             <section className="profile-notify-card">
               <div>
                 <div className="eyebrow">Notifications</div>
@@ -166,9 +156,21 @@ export function ProfilePage() {
             <strong>Telegram</strong>
             <p className="muted">
               {user?.tg_account
-                ? `New comments will be sent to ${user.tg_account}.`
-                : "Add your Telegram account to enable comment alerts there."}
+                ? `Linked. New comments will be sent to Telegram chat ${user.tg_account}.`
+                : "Not linked yet. Open the bot, choose Link accounts, and send the code shown below."}
             </p>
+            <div className="profile-steps">
+              <span>1. Open the Telegram bot</span>
+              <span>2. Press “Link accounts”</span>
+              <span>3. Send your personal code</span>
+            </div>
+            {TELEGRAM_BOT_URL ? (
+              <a className="secondary-button" href={TELEGRAM_BOT_URL} target="_blank" rel="noreferrer">
+                Open Telegram bot
+              </a>
+            ) : (
+              <p className="muted">Bot link is not configured in the frontend build yet.</p>
+            )}
           </div>
 
           <div className="profile-channel-card">
@@ -181,9 +183,11 @@ export function ProfilePage() {
           </div>
 
           <div className="profile-channel-card">
-            <strong>Public code</strong>
+            <strong>Telegram linking code</strong>
             <p className="profile-code">{user?.usercode || "-"}</p>
-            <p className="muted">Use this code where account linking or identity lookup is required.</p>
+            <p className="muted">
+              This is your one-time personal code for linking your Qliqy profile with the Telegram bot.
+            </p>
           </div>
 
           <dl className="meta-grid">
@@ -196,7 +200,7 @@ export function ProfilePage() {
               <dd>{formatDate(user?.updated_at)}</dd>
             </div>
             <div>
-              <dt>Verified</dt>
+              <dt>Email verified</dt>
               <dd>{user?.is_verified ? "Yes" : "No"}</dd>
             </div>
           </dl>
