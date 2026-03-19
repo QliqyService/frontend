@@ -187,7 +187,9 @@ export function ProfilePage() {
                   Linked
                 </p>
                 <p className="muted">
-                  Notifications will be sent to {telegramTarget || "your linked Telegram account"}.
+                  {tgNotifyEnabled
+                    ? `Enabled for ${telegramTarget || "your linked Telegram account"}.`
+                    : `Disabled for ${telegramTarget || "your linked Telegram account"}.`}
                 </p>
               </>
             ) : (
