@@ -12,6 +12,8 @@ export interface User {
   first_name: string | null;
   last_name: string | null;
   tg_account: string | null;
+  tg_username: string | null;
+  tg_notify_enabled: boolean;
   is_superuser: boolean;
   is_verified: boolean;
   usercode: string | null;
@@ -73,6 +75,8 @@ export interface UpdateUserPayload {
   first_name?: string | null;
   last_name?: string | null;
   tg_account?: string | null;
+  tg_username?: string | null;
+  tg_notify_enabled?: boolean;
   notify_email_enabled?: boolean;
   notify_email?: string | null;
 }

@@ -4,7 +4,7 @@ import { useAuth } from "../lib/auth";
 import { api } from "../lib/api";
 import { formatDate, normalizePhone } from "../lib/format";
 
-const TELEGRAM_BOT_URL = import.meta.env.VITE_TELEGRAM_BOT_URL;
+const TELEGRAM_BOT_URL = import.meta.env.VITE_TELEGRAM_BOT_URL || "https://t.me/ErnestoThoughtsBot";
 
 
 export function ProfilePage() {
@@ -14,6 +14,7 @@ export function ProfilePage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [tgNotifyEnabled, setTgNotifyEnabled] = useState(false);
   const [notifyEmailEnabled, setNotifyEmailEnabled] = useState(false);
   const [notifyEmail, setNotifyEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +26,7 @@ export function ProfilePage() {
     setFirstName(user?.first_name ?? "");
     setLastName(user?.last_name ?? "");
     setPhone(user?.phone ? String(user.phone) : "");
+    setTgNotifyEnabled(user?.tg_notify_enabled ?? false);
     setNotifyEmailEnabled(user?.notify_email_enabled ?? false);
     setNotifyEmail(user?.notify_email ?? "");
   }, [user]);
@@ -45,6 +47,7 @@ export function ProfilePage() {
         first_name: firstName || null,
         last_name: lastName || null,
         phone: normalizePhone(phone) ?? null,
+        tg_notify_enabled: tgNotifyEnabled,
         notify_email_enabled: notifyEmailEnabled,
         notify_email: notifyEmail || null,
       });
@@ -56,6 +59,9 @@ export function ProfilePage() {
       setIsSaving(false);
     }
   }
+
+  const isTelegramLinked = Boolean(user?.tg_account);
+  const telegramTarget = user?.tg_username ? `@${user.tg_username}` : user?.tg_account;
 
   return (
     <section className="page-shell stack-lg">
@@ -109,6 +115,26 @@ export function ProfilePage() {
             <section className="profile-notify-card">
               <div>
                 <div className="eyebrow">Notifications</div>
+                <h3>Telegram notifications</h3>
+                <p className="muted">
+                  Get instant alerts in Telegram when somebody leaves a new comment on your form.
+                </p>
+              </div>
+
+              <label className="toggle-row">
+                <input
+                  type="checkbox"
+                  checked={tgNotifyEnabled}
+                  onChange={(event) => setTgNotifyEnabled(event.target.checked)}
+                  disabled={!isTelegramLinked}
+                />
+                <span>{isTelegramLinked ? "Enable Telegram notifications" : "Link Telegram first"}</span>
+              </label>
+            </section>
+
+            <section className="profile-notify-card">
+              <div>
+                <div className="eyebrow">Notifications</div>
                 <h3>Email notifications</h3>
                 <p className="muted">
                   Receive email alerts when somebody leaves a new comment on your form.
@@ -154,23 +180,31 @@ export function ProfilePage() {
 
           <div className="profile-channel-card">
             <strong>Telegram</strong>
-            <p className="muted">
-              {user?.tg_account
-                ? `Linked. New comments will be sent to Telegram chat ${user.tg_account}.`
-                : "Not linked yet. Open the bot, choose Link accounts, and send the code shown below."}
-            </p>
-            <div className="profile-steps">
-              <span>1. Open the Telegram bot</span>
-              <span>2. Press “Link accounts”</span>
-              <span>3. Send your personal code</span>
-            </div>
-            {TELEGRAM_BOT_URL ? (
-              <a className="secondary-button" href={TELEGRAM_BOT_URL} target="_blank" rel="noreferrer">
-                Open Telegram bot
-              </a>
+            {isTelegramLinked ? (
+              <>
+                <p className="profile-linked">
+                  <span className="profile-checkmark">✓</span>
+                  Linked
+                </p>
+                <p className="muted">
+                  Notifications will be sent to {telegramTarget || "your linked Telegram account"}.
+                </p>
+              </>
             ) : (
-              <p className="muted">Bot link is not configured in the frontend build yet.</p>
+              <>
+                <p className="muted">
+                  Not linked yet. Open the bot, choose Link accounts, and send the code shown below.
+                </p>
+                <div className="profile-steps">
+                  <span>1. Open the Telegram bot</span>
+                  <span>2. Press “Link accounts”</span>
+                  <span>3. Send your personal code</span>
+                </div>
+              </>
             )}
+            <a className="secondary-button" href={TELEGRAM_BOT_URL} target="_blank" rel="noreferrer">
+              Open @ErnestoThoughtsBot
+            </a>
           </div>
 
           <div className="profile-channel-card">
@@ -186,7 +220,7 @@ export function ProfilePage() {
             <strong>Telegram linking code</strong>
             <p className="profile-code">{user?.usercode || "-"}</p>
             <p className="muted">
-              This is your one-time personal code for linking your Qliqy profile with the Telegram bot.
+              Use this code in @ErnestoThoughtsBot to link your Qliqy profile with Telegram.
             </p>
           </div>
 
