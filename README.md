@@ -1,54 +1,35 @@
 # Qliqy Frontend
 
-Standalone frontend for `qliqy-webapi`.
+![CI](https://github.com/ilia2003/Qliqy/actions/workflows/frontend-build.yml/badge.svg)
+![Status](https://img.shields.io/badge/status-active%20development-b4492f)
 
-## Features
+React frontend for Qliqy.
 
-- token-based login against `/api/v1/auth/login`
-- private dashboard for user forms
-- create, edit and disable forms
-- owner-side comments view
-- public form page with QR preview and comment submission
+## What It Does
 
-## Run
+- provides the authenticated dashboard
+- renders public form pages
+- lets users manage forms and profile settings
+- exposes Telegram and email notification controls
 
-```bash
-cp .env.example .env
-npm install
-npm run dev
+## How It Works
+
+The frontend talks to `webapi` over REST. Public pages are rendered in React, while all business data comes from `webapi` endpoints under `/api/v1`.
+
+## Product Note
+
+Public registration is intentionally disabled for now while the interface is being refined.
+
+Test account:
+
+```json
+{
+  "email": "admin@admin.com",
+  "first_name": "John",
+  "last_name": "Doe",
+  "password": "admin123"
+}
 ```
 
-Default API base URL:
-
-```env
-VITE_API_BASE_URL=http://localhost:8000/api/v1
-```
-
-## Docker
-
-Build the frontend as a separate service:
-
-```bash
-docker build \
-  -f .deployment/Dockerfile \
-  --build-arg VITE_API_BASE_URL=http://localhost:8001/api/v1 \
-  -t qliqy-frontend .
-```
-
-Run it:
-
-```bash
-docker run --rm -p 8002:80 qliqy-frontend
-```
-
-The container serves a static SPA over `nginx`, so this is a standalone deployable service.
-
-## Separate repository
-
-This folder is already isolated from the Python backend and can be moved into its own git repository directly:
-
-```bash
-git init
-git add .
-git commit -m "Initial frontend"
-```
+- Developer: Ilia Fedorenko
+- Developer: Ernest Berezin
