@@ -54,6 +54,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await api.login(email, password);
     localStorage.setItem(TOKEN_STORAGE_KEY, response.access_token);
     setToken(response.access_token);
+
+    try {
+      const profile = await api.getMe(response.access_token);
+      setUser(profile);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        setToken(null);
+        setUser(null);
+      }
+      throw error;
+    }
   }
 
   async function logout() {
@@ -87,11 +99,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setUser(profile);
         }
-      } catch {
+      } catch (error) {
         if (!cancelled) {
-          localStorage.removeItem(TOKEN_STORAGE_KEY);
-          setToken(null);
-          setUser(null);
+          if (error instanceof ApiError && error.status === 401) {
+            localStorage.removeItem(TOKEN_STORAGE_KEY);
+            setToken(null);
+            setUser(null);
+          } else {
+            setUser(null);
+          }
         }
       } finally {
         if (!cancelled) {
