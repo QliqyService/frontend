@@ -110,6 +110,20 @@ export const api = {
     });
   },
 
+  async requestVerifyToken(email: string): Promise<void> {
+    return request<void>("/auth/request_verify_token", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  async verifyToken(token: string): Promise<User> {
+    return request<User>("/auth/verify_token", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  },
+
   async getMe(token: string): Promise<User> {
     return request<User>("/user/me", undefined, token);
   },

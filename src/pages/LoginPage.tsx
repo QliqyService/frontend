@@ -17,6 +17,7 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,6 +28,7 @@ export function LoginPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setSuccess(null);
 
     if (mode === "register") {
       if (firstName.trim().length < 2) {
@@ -55,6 +57,7 @@ export function LoginPage() {
           last_name: lastName.trim() || null,
           password,
         });
+        setSuccess("Account created. Check your email to verify it.");
       }
 
       await login(email, password);
@@ -174,6 +177,7 @@ export function LoginPage() {
           ) : null}
 
           {error ? <p className="error-text">{error}</p> : null}
+          {success ? <p className="success-text">{success}</p> : null}
 
           <button type="submit" className="primary-button" disabled={isSubmitting}>
             {isSubmitting
@@ -188,6 +192,8 @@ export function LoginPage() {
           {mode === "login" ? (
             <p className="auth-footnote">
               Forgot your password? <Link className="text-link" to="/forgot-password">Reset it</Link>
+              {" · "}
+              Need verification? <Link className="text-link" to="/verify-email">Verify email</Link>
             </p>
           ) : null}
         </form>
