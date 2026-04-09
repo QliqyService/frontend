@@ -5,6 +5,43 @@ import { api } from "../lib/api";
 import { formatDate, normalizePhone } from "../lib/format";
 
 const TELEGRAM_BOT_URL = import.meta.env.VITE_TELEGRAM_BOT_URL || "https://t.me/ErnestoThoughtsBot";
+const AVATAR_CACHE_PREFIX = "qliqy.avatar.";
+
+function getAvatarCacheKey(avatarKey: string): string {
+  return `${AVATAR_CACHE_PREFIX}${avatarKey}`;
+}
+
+function readCachedAvatar(avatarKey: string): string | null {
+  try {
+    return localStorage.getItem(getAvatarCacheKey(avatarKey));
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedAvatar(avatarKey: string, dataUrl: string) {
+  try {
+    localStorage.setItem(getAvatarCacheKey(avatarKey), dataUrl);
+  } catch {
+    // Ignore cache write failures caused by storage limits or privacy settings.
+  }
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result;
+      if (typeof result === "string") {
+        resolve(result);
+        return;
+      }
+      reject(new Error("Failed to read avatar"));
+    };
+    reader.onerror = () => reject(reader.error ?? new Error("Failed to read avatar"));
+    reader.readAsDataURL(blob);
+  });
+}
 
 
 export function ProfilePage() {
@@ -41,8 +78,11 @@ export function ProfilePage() {
       return;
     }
 
-    let revokedUrl: string | null = null;
     let cancelled = false;
+    const cachedAvatarUrl = readCachedAvatar(user.avatar_key);
+    if (cachedAvatarUrl) {
+      setAvatarUrl(cachedAvatarUrl);
+    }
 
     async function loadAvatar() {
       setIsAvatarLoading(true);
@@ -55,13 +95,14 @@ export function ProfilePage() {
           return;
         }
 
-        revokedUrl = URL.createObjectURL(avatarBlob);
+        const nextAvatarUrl = await blobToDataUrl(avatarBlob);
         if (!cancelled) {
-          setAvatarUrl(revokedUrl);
+          setAvatarUrl(nextAvatarUrl);
         }
+        writeCachedAvatar(user.avatar_key, nextAvatarUrl);
       } catch {
         if (!cancelled) {
-          setAvatarUrl(null);
+          setAvatarUrl(cachedAvatarUrl ?? null);
         }
       } finally {
         if (!cancelled) {
@@ -74,9 +115,6 @@ export function ProfilePage() {
 
     return () => {
       cancelled = true;
-      if (revokedUrl) {
-        URL.revokeObjectURL(revokedUrl);
-      }
     };
   }, [token, user?.avatar_key]);
 
@@ -91,6 +129,7 @@ export function ProfilePage() {
     setIsAvatarUploading(true);
 
     try {
+      setAvatarUrl(await blobToDataUrl(nextFile));
       await api.uploadMyAvatar(token, nextFile);
       await refreshUser();
       setSuccess("Avatar updated.");
