@@ -173,6 +173,9 @@ export function ProfilePage() {
   const isTelegramLinked = Boolean(user?.tg_account);
   const telegramTarget = user?.tg_username ? `@${user.tg_username}` : user?.tg_account;
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.trim() || email.charAt(0) || "Q";
+  const telegramLinkUrl = user?.usercode
+    ? `${TELEGRAM_BOT_URL}?start=${encodeURIComponent(user.usercode)}`
+    : TELEGRAM_BOT_URL;
 
   return (
     <section className="page-shell stack-lg">
@@ -347,17 +350,17 @@ export function ProfilePage() {
             ) : (
               <>
                 <p className="muted">
-                  Not linked yet. Open the bot, choose Link accounts, and send the code shown below.
+                  Not linked yet. Open Telegram from this button and the bot will link your account automatically.
                 </p>
                 <div className="profile-steps">
                   <span>1. Open the Telegram bot</span>
-                  <span>2. Press “Link accounts”</span>
-                  <span>3. Send your personal code</span>
+                  <span>2. Press Start in Telegram</span>
+                  <span>3. Wait for the confirmation message</span>
                 </div>
               </>
             )}
-            <a className="secondary-button" href={TELEGRAM_BOT_URL} target="_blank" rel="noreferrer">
-              Open @ErnestoThoughtsBot
+            <a className="secondary-button" href={telegramLinkUrl} target="_blank" rel="noreferrer">
+              {isTelegramLinked ? "Open @ErnestoThoughtsBot" : "Link Telegram automatically"}
             </a>
           </div>
 
@@ -374,7 +377,7 @@ export function ProfilePage() {
             <strong>Telegram linking code</strong>
             <p className="profile-code">{user?.usercode || "-"}</p>
             <p className="muted">
-              Use this code in @ErnestoThoughtsBot to link your Qliqy profile with Telegram.
+              Manual fallback only. If automatic linking does not work, send this code to @ErnestoThoughtsBot.
             </p>
           </div>
 
