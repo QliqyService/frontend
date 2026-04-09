@@ -7,7 +7,7 @@ import { api } from "../lib/api";
 export function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const tokenFromQuery = searchParams.get("token") ?? "";
+  const tokenFromQuery = searchParams.get("token") ?? searchParams.get("code") ?? "";
 
   const [token, setToken] = useState(tokenFromQuery);
   const [password, setPassword] = useState("");
