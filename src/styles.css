@@ -319,6 +319,12 @@ button {
   background: #f7efdf;
 }
 
+.auth-switch {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .inline-bar code {
   overflow-wrap: anywhere;
 }

@@ -4,6 +4,7 @@ import type {
   CreateCommentPayload,
   CreateFormPayload,
   LoginResponse,
+  RegisterPayload,
   UpdateUserPayload,
   UpdateFormPayload,
   User,
@@ -67,6 +68,13 @@ async function request<T>(path: string, init?: RequestInit, token?: string): Pro
 }
 
 export const api = {
+  async register(payload: RegisterPayload): Promise<{ id: string }> {
+    return request<{ id: string }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
   async login(email: string, password: string): Promise<LoginResponse> {
     const body = new URLSearchParams();
     body.set("username", email);

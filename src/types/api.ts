@@ -5,6 +5,13 @@ export interface LoginResponse {
   token_type: string;
 }
 
+export interface RegisterPayload {
+  email: string;
+  first_name: string;
+  last_name?: string | null;
+  password: string;
+}
+
 export interface User {
   id: string;
   email: string;
