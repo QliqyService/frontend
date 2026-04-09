@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -184,6 +184,12 @@ export function LoginPage() {
                 ? "Create account"
                 : "Sign in"}
           </button>
+
+          {mode === "login" ? (
+            <p className="auth-footnote">
+              Forgot your password? <Link className="text-link" to="/forgot-password">Reset it</Link>
+            </p>
+          ) : null}
         </form>
       </section>
     </div>

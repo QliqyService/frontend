@@ -7,10 +7,12 @@ import { FormCreatePage } from "./pages/FormCreatePage";
 import { FormDetailsPage } from "./pages/FormDetailsPage";
 import { FormEditPage } from "./pages/FormEditPage";
 import { FormsListPage } from "./pages/FormsListPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { PublicFormPage } from "./pages/PublicFormPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 
 
 export default function App() {
@@ -19,6 +21,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/public/forms/:formId" element={<PublicFormPage />} />
 
           <Route
