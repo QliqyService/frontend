@@ -100,6 +100,39 @@ export const api = {
     );
   },
 
+  async uploadMyAvatar(token: string, file: File): Promise<{ avatar_key: string }> {
+    const body = new FormData();
+    body.set("file", file);
+
+    return request<{ avatar_key: string }>(
+      "/user/me/avatar",
+      {
+        method: "POST",
+        body,
+      },
+      token,
+    );
+  },
+
+  async getMyAvatar(token: string): Promise<Blob | null> {
+    const response = await fetch(`${API_BASE_URL}/user/me/avatar`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      await parseResponse(response);
+      return null;
+    }
+
+    return response.blob();
+  },
+
   async getForms(token: string): Promise<UserForm[]> {
     return request<UserForm[]>("/form/forms", undefined, token);
   },

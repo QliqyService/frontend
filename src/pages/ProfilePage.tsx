@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "../lib/auth";
 import { api } from "../lib/api";
@@ -9,6 +9,7 @@ const TELEGRAM_BOT_URL = import.meta.env.VITE_TELEGRAM_BOT_URL || "https://t.me/
 
 export function ProfilePage() {
   const { token, user, refreshUser } = useAuth();
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -20,6 +21,9 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isAvatarLoading, setIsAvatarLoading] = useState(false);
+  const [isAvatarUploading, setIsAvatarUploading] = useState(false);
 
   useEffect(() => {
     setEmail(user?.email ?? "");
@@ -30,6 +34,73 @@ export function ProfilePage() {
     setNotifyEmailEnabled(user?.notify_email_enabled ?? false);
     setNotifyEmail(user?.notify_email ?? "");
   }, [user]);
+
+  useEffect(() => {
+    if (!token || !user?.avatar_key) {
+      setAvatarUrl(null);
+      return;
+    }
+
+    let revokedUrl: string | null = null;
+    let cancelled = false;
+
+    async function loadAvatar() {
+      setIsAvatarLoading(true);
+      try {
+        const avatarBlob = await api.getMyAvatar(token);
+        if (!avatarBlob || cancelled) {
+          if (!cancelled) {
+            setAvatarUrl(null);
+          }
+          return;
+        }
+
+        revokedUrl = URL.createObjectURL(avatarBlob);
+        if (!cancelled) {
+          setAvatarUrl(revokedUrl);
+        }
+      } catch {
+        if (!cancelled) {
+          setAvatarUrl(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsAvatarLoading(false);
+        }
+      }
+    }
+
+    void loadAvatar();
+
+    return () => {
+      cancelled = true;
+      if (revokedUrl) {
+        URL.revokeObjectURL(revokedUrl);
+      }
+    };
+  }, [token, user?.avatar_key]);
+
+  async function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+    const nextFile = event.target.files?.[0];
+    if (!nextFile || !token) {
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+    setIsAvatarUploading(true);
+
+    try {
+      await api.uploadMyAvatar(token, nextFile);
+      await refreshUser();
+      setSuccess("Avatar updated.");
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "Failed to upload avatar");
+    } finally {
+      setIsAvatarUploading(false);
+      event.target.value = "";
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -62,6 +133,7 @@ export function ProfilePage() {
 
   const isTelegramLinked = Boolean(user?.tg_account);
   const telegramTarget = user?.tg_username ? `@${user.tg_username}` : user?.tg_account;
+  const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.trim() || email.charAt(0) || "Q";
 
   return (
     <section className="page-shell stack-lg">
@@ -80,6 +152,47 @@ export function ProfilePage() {
           </div>
 
           <form className="stack" onSubmit={handleSubmit}>
+            <section className="profile-avatar-card">
+              <div className="profile-avatar-wrap">
+                {avatarUrl ? (
+                  <img className="profile-avatar-image" src={avatarUrl} alt="Profile avatar" />
+                ) : (
+                  <div className="profile-avatar-fallback" aria-hidden="true">
+                    {initials.toUpperCase()}
+                  </div>
+                )}
+              </div>
+
+              <div className="stack">
+                <div>
+                  <h3>Profile photo</h3>
+                  <p className="muted">
+                    Upload a square image to personalize your account. JPG, PNG, WEBP and similar formats work best.
+                  </p>
+                </div>
+
+                <div className="actions">
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isAvatarUploading}
+                  >
+                    {isAvatarUploading ? "Uploading..." : "Upload photo"}
+                  </button>
+                  {isAvatarLoading ? <span className="muted">Loading current photo...</span> : null}
+                </div>
+
+                <input
+                  ref={avatarInputRef}
+                  className="sr-only"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                />
+              </div>
+            </section>
+
             <div className="split-fields">
               <label className="field">
                 <span>First name</span>
