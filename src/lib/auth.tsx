@@ -57,9 +57,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const profile = await api.getMe(response.access_token);
+      if (!profile.is_verified) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        setToken(null);
+        setUser(null);
+        throw new ApiError("Please verify your email before signing in.", 403);
+      }
       setUser(profile);
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        setToken(null);
+        setUser(null);
+      } else if (error instanceof ApiError && error.status === 403) {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
         setToken(null);
         setUser(null);
@@ -97,7 +107,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const profile = await api.getMe(token);
         if (!cancelled) {
-          setUser(profile);
+          if (!profile.is_verified) {
+            localStorage.removeItem(TOKEN_STORAGE_KEY);
+            setToken(null);
+            setUser(null);
+          } else {
+            setUser(profile);
+          }
         }
       } catch (error) {
         if (!cancelled) {

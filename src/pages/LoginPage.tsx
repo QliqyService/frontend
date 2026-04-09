@@ -20,6 +20,8 @@ export function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
 
   if (isAuthenticated) {
     return <Navigate to="/forms" replace />;
@@ -57,7 +59,10 @@ export function LoginPage() {
           last_name: lastName.trim() || null,
           password,
         });
-        setSuccess("Account created. Check your email to verify it.");
+        setPendingVerificationEmail(email.trim());
+        setSuccess("Account created. Check your email to verify it before signing in.");
+        setMode("login");
+        return;
       }
 
       await login(email, password);
@@ -72,6 +77,25 @@ export function LoginPage() {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    if (!pendingVerificationEmail) {
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+    setIsResendingVerification(true);
+
+    try {
+      await api.requestVerifyToken(pendingVerificationEmail);
+      setSuccess("Verification email sent again. Check your inbox.");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Failed to resend verification email");
+    } finally {
+      setIsResendingVerification(false);
     }
   }
 
@@ -99,6 +123,7 @@ export function LoginPage() {
               onClick={() => {
                 setMode("login");
                 setError(null);
+                setSuccess(null);
               }}
             >
               Sign in
@@ -109,6 +134,7 @@ export function LoginPage() {
               onClick={() => {
                 setMode("register");
                 setError(null);
+                setSuccess(null);
               }}
             >
               Sign up
@@ -178,6 +204,20 @@ export function LoginPage() {
 
           {error ? <p className="error-text">{error}</p> : null}
           {success ? <p className="success-text">{success}</p> : null}
+
+          {pendingVerificationEmail && mode === "login" ? (
+            <div className="inline-bar">
+              <span>Verification pending for {pendingVerificationEmail}.</span>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={handleResendVerification}
+                disabled={isResendingVerification}
+              >
+                {isResendingVerification ? "Sending..." : "Resend verification email"}
+              </button>
+            </div>
+          ) : null}
 
           <button type="submit" className="primary-button" disabled={isSubmitting}>
             {isSubmitting
